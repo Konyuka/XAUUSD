@@ -56,6 +56,20 @@ This pulls data from Twelve Data, writes a canonical parquet file into `data/raw
 - Run the notebook `notebooks/data_quality.ipynb` to ensure there are no missing/duplicate bars and to preview engineered indicators.
 - Programmatic helpers live in `goldbot.data.quality` (`load_cached_prices`, `compute_quality_report`) so CI/tests can assert feed health before backtests.
 
+### Run baseline strategy/backtest
+```bash
+python -m goldbot.pipeline.baseline --symbol XAUUSD --timeframe 1h
+```
+This loads the cached dataset, engineers indicators, runs the dual moving-average strategy, and prints both feed quality metrics and key performance stats from the vectorized backtester.
+
+### Generate research reports
+```bash
+python -m goldbot.reporting.baseline_report --symbol XAUUSD --timeframe 1h --output-dir reports
+```
+Creates JSON snapshots of stats + data quality and a Plotly HTML equity curve under `reports/`, ready to share or attach to notebooks.
+
+Open `notebooks/performance_insights.ipynb` to load those artifacts, inspect stats inline, and re-render interactive equity curves inside Jupyter.
+
 ### MT5 (FBS) integration
 - Add your MT5 demo/live credentials to `.env`.
 - Use `goldbot.execution.MT5Adapter` to connect:
@@ -68,6 +82,13 @@ This pulls data from Twelve Data, writes a canonical parquet file into `data/raw
   adapter.shutdown()
   ```
 - The adapter wraps the official `MetaTrader5` Python API and aligns with the FBS-Demo server out of the box.
+
+### MT5 Smoke Test CLI
+Before running live logic, sanity-check the connection (optionally place a micro-order):
+```bash
+python -m goldbot.execution.smoke --place-order --side buy --volume 0.01
+```
+Omit `--place-order` to only verify login/account info without executing trades.
 
 ## Immediate Roadmap
 1. Scaffold package + baseline utilities (this commit).  
