@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "goldbot"
+version = "0.1.0"
+description = "Research-to-execution stack for intelligent XAUUSD trading."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "GOLD Bot Team" }
+]
+license = { text = "Proprietary" }
+dependencies = [
+  "pandas>=2.1",
+  "polars>=0.20",
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "statsmodels>=0.14",
+  "scikit-learn>=1.4",
+  "backtrader>=1.9.78.123",
+  "vectorbt>=0.24.4",
+  "ta>=0.11.0",
+  "loguru>=0.7",
+  "pydantic-settings>=2.1",
+  "pyyaml>=6.0",
+  "requests>=2.31",
+  "tenacity>=8.2",
+  "empyrical-reloaded>=0.5",
+  "plotly>=5.18"
+]
+
+[project.optional-dependencies]
+dev = [
+  "black>=23.12",
+  "ruff>=0.1.7",
+  "pytest>=7.4",
+  "pytest-cov>=4.1",
+  "ipykernel>=6.25"
+]
+
+[project.urls]
+homepage = "https://example.com/goldbot"
+documentation = "https://example.com/goldbot/docs"
+repository = "https://example.com/goldbot/repo"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+src = ["src"]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E203", "E266", "E501", "W503"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --disable-warnings"
+testpaths = ["tests"]
+
