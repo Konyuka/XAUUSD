@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+from loguru import logger
 
 from goldbot.config import settings
 
@@ -59,4 +60,27 @@ def resample_bars(df: pd.DataFrame, rule: str, ohlc_cols: Optional[list[str]] = 
     ohlc_dict["close"] = "last"
     agg = df.resample(rule).agg({**ohlc_dict, "volume": "sum"})
     return agg.dropna(how="any")
+
+
+def save_price_data(
+    df: pd.DataFrame,
+    symbol: str,
+    timeframe: str,
+    provider: str = "twelvedata",
+    fmt: str = "parquet",
+) -> Path:
+    """Persist dataframe to canonical path in data/raw."""
+
+    sanitized_symbol = symbol.lower().replace("/", "")
+    filename = f"{sanitized_symbol}_{timeframe.lower()}_{provider}.{fmt}"
+    target = settings.data.raw_dir / filename
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if fmt == "parquet":
+        df.to_parquet(target)
+    elif fmt == "csv":
+        df.reset_index().to_csv(target, index=False)
+    else:
+        raise ValueError(f"Unsupported format {fmt}")
+    logger.info("Saved %s rows to %s", len(df), target)
+    return target
 

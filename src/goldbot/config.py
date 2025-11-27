@@ -29,6 +29,20 @@ class StrategyUniverse(BaseModel):
     execution_timeframe: str = "15M"
 
 
+class DataProviderSettings(BaseModel):
+    twelvedata_api_key: Optional[str] = None
+    default_symbol: str = "XAU/USD"
+    default_interval: str = "1h"
+    outputsize: int = 5000
+
+
+class MT5Credentials(BaseModel):
+    server: str = "FBS-Demo"
+    login: Optional[int] = None
+    password: Optional[str] = None
+    symbol: str = "XAUUSD"
+
+
 class Settings(BaseSettings):
     """Environment-aware settings container."""
 
@@ -38,9 +52,8 @@ class Settings(BaseSettings):
     data: DataPaths = DataPaths()
     backtest: BacktestConfig = BacktestConfig()
     universe: StrategyUniverse = StrategyUniverse()
-    broker_api_url: Optional[str] = None
-    broker_api_key: Optional[str] = None
-    broker_account_id: Optional[str] = None
+    providers: DataProviderSettings = DataProviderSettings()
+    mt5: MT5Credentials = MT5Credentials()
 
 
 @lru_cache(maxsize=1)

@@ -25,13 +25,49 @@ This repo will grow into a research-to-production pipeline for intelligent **XAU
    - Real-time risk dashboard, alerting, and circuit breakers.
 
 ## Tech Stack (initial)
-- **Language**: Python 3.11+
+- **Language**: Python 3.11+ (tested with 3.14)
 - **Core libs**: `pandas`, `numpy`, `polars`, `ta`, `scikit-learn`, `statsmodels`, `scipy`
 - **Backtesting**: custom vectorized engine + `backtrader` bridge
 - **Risk/metrics**: `vectorbt`, `empyrical`, custom analytics
 - **Config**: `pydantic-settings` (for environment-aware configs), YAML/JSON
-- **Logging**: `structlog` or `loguru`
+- **Logging**: `loguru`
 - **Packaging**: `pyproject.toml` + `src/` layout
+
+## Getting Started
+1. **Bootstrap environment**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate             # Windows
+   pip install --upgrade pip
+   pip install -e .[dev]
+   ```
+2. **Configure secrets**  
+   - Copy `env.example` → `.env`.  
+   - Drop in your Twelve Data API key (`GOLD_PROVIDERS__TWELVEDATA_API_KEY`).  
+   - Populate MT5 credentials supplied by FBS (`GOLD_MT5__LOGIN`, etc.).
+
+### Fetch historical XAU/USD data via Twelve Data
+```bash
+python -m goldbot.data.cli --symbol XAU/USD --interval 1h --outputsize 5000
+```
+This pulls data from Twelve Data, writes a canonical parquet file into `data/raw/`, and can be rerun on demand. The CLI relies on the same config stack, so pass `--symbol XAU/USD` or tweak `.env` for defaults.
+
+### Validate incoming data
+- Run the notebook `notebooks/data_quality.ipynb` to ensure there are no missing/duplicate bars and to preview engineered indicators.
+- Programmatic helpers live in `goldbot.data.quality` (`load_cached_prices`, `compute_quality_report`) so CI/tests can assert feed health before backtests.
+
+### MT5 (FBS) integration
+- Add your MT5 demo/live credentials to `.env`.
+- Use `goldbot.execution.MT5Adapter` to connect:
+  ```python
+  from goldbot.execution import MT5Adapter
+
+  adapter = MT5Adapter()
+  adapter.connect()
+  adapter.place_market_order("buy", volume=1.0)
+  adapter.shutdown()
+  ```
+- The adapter wraps the official `MetaTrader5` Python API and aligns with the FBS-Demo server out of the box.
 
 ## Immediate Roadmap
 1. Scaffold package + baseline utilities (this commit).  
@@ -48,9 +84,9 @@ This repo will grow into a research-to-production pipeline for intelligent **XAU
 4. Run lint/tests via `make check` (to be added).  
 
 ## Next Steps
-- Finalize dependency versions in `pyproject.toml`.  
-- Populate `src/goldbot` modules (data loaders, indicator toolkit, strategy interfaces, backtest engine).  
-- Prepare sample datasets and notebooks for exploratory analysis.  
+- Extend CLI to support incremental sync + WebSocket streaming.
+- Add notebook-based diagnostics for fetched data and indicator suites.
+- Finish MT5 risk controls (exposure caps, heartbeat monitoring) and connect to execution orchestrator.
 
 _Let’s iterate relentlessly while keeping each layer testable and observable._
 
